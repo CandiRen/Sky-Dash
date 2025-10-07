@@ -43,6 +43,56 @@ const state = {
   readyTick: 0,
 };
 
+const skylineLayers = [
+  {
+    color: "#4c6f99",
+    accent: "#3b597d",
+    roof: "#5b82ad",
+    windowColor: "rgba(255, 255, 255, 0.18)",
+    baseLine: GAME_HEIGHT - 200,
+    minHeight: 120,
+    maxHeight: 190,
+    speed: 12,
+    width: 62,
+    gap: 24,
+    windowSpacingX: 14,
+    windowSpacingY: 18,
+    patternCount: 8,
+  },
+  {
+    color: "#395676",
+    accent: "#2a425a",
+    roof: "#446184",
+    windowColor: "rgba(255, 235, 190, 0.28)",
+    baseLine: GAME_HEIGHT - 130,
+    minHeight: 160,
+    maxHeight: 240,
+    speed: 20,
+    width: 74,
+    gap: 20,
+    windowSpacingX: 16,
+    windowSpacingY: 20,
+    patternCount: 10,
+  },
+  {
+    color: "#22364b",
+    accent: "#182636",
+    roof: "#2e4a66",
+    windowColor: "rgba(255, 220, 140, 0.45)",
+    baseLine: GAME_HEIGHT - 52,
+    minHeight: 190,
+    maxHeight: 280,
+    speed: 34,
+    width: 84,
+    gap: 18,
+    windowSpacingX: 18,
+    windowSpacingY: 22,
+    patternCount: 12,
+  },
+];
+
+const skylinePatterns = skylineLayers.map((layer, index) => createSkylinePattern(layer, index));
+
 function resetGame() {
   pipes.length = 0;
   plane.y = GAME_HEIGHT * 0.5;
@@ -167,17 +217,6 @@ function drawBackground() {
   ctx.fillStyle = SKY_GRADIENT;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-  const hillHeight = 120;
-  ctx.fillStyle = "#71c574";
-  ctx.beginPath();
-  ctx.moveTo(0, GAME_HEIGHT);
-  ctx.lineTo(0, GAME_HEIGHT - hillHeight);
-  ctx.quadraticCurveTo(GAME_WIDTH * 0.4, GAME_HEIGHT - hillHeight - 40, GAME_WIDTH * 0.6, GAME_HEIGHT - hillHeight + 8);
-  ctx.quadraticCurveTo(GAME_WIDTH * 0.85, GAME_HEIGHT, GAME_WIDTH, GAME_HEIGHT - hillHeight + 36);
-  ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
-  ctx.closePath();
-  ctx.fill();
-
   ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
   const cloudCount = 5;
   for (let i = 0; i < cloudCount; i++) {
@@ -186,6 +225,12 @@ function drawBackground() {
     const baseY = 90 + Math.sin(state.lastTime * 0.002 + i) * 16;
     drawCloud(baseX, baseY, 0.7 + (i % 3) * 0.18);
   }
+
+  for (let i = 0; i < skylineLayers.length; i++) {
+    drawSkylineLayer(skylineLayers[i], skylinePatterns[i]);
+  }
+
+  drawStreetLevel();
 }
 
 function drawCloud(x, y, scale) {
@@ -201,6 +246,108 @@ function drawCloud(x, y, scale) {
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+}
+
+function drawSkylineLayer(layer, pattern) {
+  const spacing = layer.width + layer.gap;
+  const totalPatternWidth = pattern.length * spacing;
+  const offset = (state.lastTime * 0.001 * layer.speed) % totalPatternWidth;
+
+  let x = -offset;
+  let index = 0;
+  while (x < GAME_WIDTH + spacing) {
+    const building = pattern[index % pattern.length];
+    const height = building.height;
+    const topY = layer.baseLine - height;
+    const rightShadeWidth = Math.max(6, layer.width * 0.16);
+
+    ctx.fillStyle = layer.color;
+    ctx.fillRect(x, topY, layer.width, height);
+
+    ctx.fillStyle = layer.accent;
+    ctx.fillRect(x + layer.width - rightShadeWidth, topY, rightShadeWidth, height);
+
+    drawBuildingWindows(x, topY, height, layer, building);
+    drawRoofDetail(x, topY, layer, building);
+
+    x += spacing;
+    index += 1;
+  }
+}
+
+function drawBuildingWindows(x, topY, height, layer, building) {
+  if (!layer.windowColor) {
+    return;
+  }
+
+  const startX = x + 6;
+  const startY = topY + 10;
+  const usableWidth = layer.width - 12;
+  const usableHeight = height - 18;
+
+  if (usableWidth <= 0 || usableHeight <= 0) {
+    return;
+  }
+
+  const cols = Math.max(1, Math.floor(usableWidth / layer.windowSpacingX));
+  const rows = Math.max(1, Math.floor(usableHeight / layer.windowSpacingY));
+  const windowWidth = Math.min(8, layer.windowSpacingX - 4);
+  const windowHeight = Math.min(10, layer.windowSpacingY - 6);
+
+  ctx.fillStyle = layer.windowColor;
+
+  for (let row = 0; row < rows; row++) {
+    const y = startY + row * layer.windowSpacingY;
+    for (let col = 0; col < cols; col++) {
+      const xOffset = startX + col * layer.windowSpacingX;
+      const lightSeed = building.seed + row * 13 + col * 17;
+      if (seededRandom(lightSeed) > 0.55) {
+        continue;
+      }
+      ctx.fillRect(xOffset, y, windowWidth, windowHeight);
+    }
+  }
+}
+
+function drawRoofDetail(x, topY, layer, building) {
+  ctx.fillStyle = layer.roof;
+
+  if (building.roofStyle === "slant") {
+    ctx.beginPath();
+    ctx.moveTo(x, topY + 4);
+    ctx.lineTo(x + layer.width * 0.55, topY - layer.width * 0.16);
+    ctx.lineTo(x + layer.width, topY + 4);
+    ctx.closePath();
+    ctx.fill();
+  } else if (building.roofStyle === "antenna") {
+    ctx.fillRect(x, topY - 4, layer.width, 4);
+    ctx.fillRect(x + layer.width * 0.48, topY - 24, layer.width * 0.04, 20);
+    ctx.beginPath();
+    ctx.arc(x + layer.width * 0.5, topY - 26, 3, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillRect(x, topY - 3, layer.width, 3);
+  }
+}
+
+function drawStreetLevel() {
+  const streetHeight = 40;
+  ctx.fillStyle = "#111a27";
+  ctx.fillRect(0, GAME_HEIGHT - streetHeight, GAME_WIDTH, streetHeight);
+
+  ctx.fillStyle = "#1d2a3b";
+  ctx.fillRect(0, GAME_HEIGHT - streetHeight - 6, GAME_WIDTH, 6);
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.fillRect(0, GAME_HEIGHT - streetHeight, GAME_WIDTH, 4);
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+  const dashWidth = 34;
+  const dashGap = 22;
+  const travel = (state.lastTime * 0.12) % (dashWidth + dashGap);
+  for (let x = -dashWidth; x < GAME_WIDTH + dashWidth; x += dashWidth + dashGap) {
+    ctx.fillRect(x + travel, GAME_HEIGHT - streetHeight / 2 - 2, dashWidth, 4);
+  }
 }
 
 function drawPipes() {
@@ -328,6 +475,27 @@ function clamp(value, min, max) {
 
 function randomRange(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function seededRandom(seed) {
+  const x = Math.sin(seed) * 43758.5453123;
+  return x - Math.floor(x);
+}
+
+function createSkylinePattern(layer, seedOffset) {
+  const pattern = [];
+  for (let i = 0; i < layer.patternCount; i++) {
+    const seed = seedOffset * 10.17 + i * 3.73;
+    const height = Math.round(layer.minHeight + (layer.maxHeight - layer.minHeight) * seededRandom(seed + 0.11));
+    const roofRoll = seededRandom(seed + 0.47);
+    const roofStyle = roofRoll > 0.72 ? "antenna" : roofRoll > 0.38 ? "slant" : "flat";
+    pattern.push({
+      height,
+      roofStyle,
+      seed: Math.floor(seededRandom(seed + 0.91) * 1000),
+    });
+  }
+  return pattern;
 }
 
 function loop(timestamp) {
