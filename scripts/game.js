@@ -91,6 +91,37 @@ const skylineLayers = [
   },
 ];
 
+const obstacleStyles = [
+  {
+    body: '#1f3652',
+    accent: '#142336',
+    roof: '#2d4d70',
+    window: 'rgba(170, 214, 255, 0.82)',
+    highlight: 'rgba(255, 255, 255, 0.25)',
+  },
+  {
+    body: '#1c3a55',
+    accent: '#13283a',
+    roof: '#33597c',
+    window: 'rgba(150, 210, 255, 0.78)',
+    highlight: 'rgba(255, 255, 255, 0.22)',
+  },
+  {
+    body: '#233c5f',
+    accent: '#162949',
+    roof: '#3b6289',
+    window: 'rgba(180, 230, 255, 0.8)',
+    highlight: 'rgba(255, 255, 255, 0.28)',
+  },
+  {
+    body: '#19314a',
+    accent: '#102136',
+    roof: '#2a4a68',
+    window: 'rgba(140, 200, 240, 0.76)',
+    highlight: 'rgba(255, 255, 255, 0.2)',
+  },
+];
+
 const skylinePatterns = skylineLayers.map((layer, index) => createSkylinePattern(layer, index));
 
 function resetGame() {
@@ -139,6 +170,8 @@ function createPipe() {
     gapBottom: gapCenter + gapSize * 0.5,
     width: pipeSettings.width,
     scored: false,
+    styleIndex: Math.floor(Math.random() * obstacleStyles.length),
+    windowSeed: Math.random() * 1000,
   });
 }
 
@@ -352,40 +385,146 @@ function drawStreetLevel() {
 
 function drawPipes() {
   for (const pipe of pipes) {
-    const topHeight = pipe.gapTop;
-    const bottomY = pipe.gapBottom;
-    const bottomHeight = GAME_HEIGHT - bottomY;
-
-    ctx.fillStyle = "#d9e6fb";
-    ctx.fillRect(pipe.x, 0, pipe.width, topHeight);
-    ctx.fillRect(pipe.x, bottomY, pipe.width, bottomHeight);
-
-    drawCloudCap(pipe.x, topHeight, pipe.width, true);
-    drawCloudCap(pipe.x, bottomY, pipe.width, false);
-
-    ctx.fillStyle = "rgba(83, 105, 141, 0.25)";
-    ctx.fillRect(pipe.x + pipe.width - 10, 0, 10, topHeight);
-    ctx.fillRect(pipe.x + pipe.width - 10, bottomY, 10, bottomHeight);
+    const style = obstacleStyles[pipe.styleIndex] || obstacleStyles[0];
+    drawObstacleBuilding(pipe.x, pipe.gapTop, pipe.width, pipe.gapTop, true, style, pipe.windowSeed);
+    drawObstacleBuilding(pipe.x, pipe.gapBottom, pipe.width, GAME_HEIGHT - pipe.gapBottom, false, style, pipe.windowSeed + 101);
   }
 }
 
-function drawCloudCap(x, y, width, isTop) {
-  ctx.save();
-  ctx.translate(x, y);
-  if (isTop) {
-    ctx.scale(1, -1);
+function drawObstacleBuilding(x, startY, width, height, isTop, style, seed) {
+  if (height <= 0) {
+    return;
   }
 
-  ctx.fillStyle = "#ecf4ff";
-  ctx.beginPath();
-  ctx.arc(width * 0.2, 0, width * 0.28, Math.PI, Math.PI * 2);
-  ctx.arc(width * 0.5, -12, width * 0.34, Math.PI, Math.PI * 2);
-  ctx.arc(width * 0.8, 0, width * 0.24, Math.PI, Math.PI * 2);
-  ctx.closePath();
-  ctx.fill();
+  ctx.save();
+  ctx.translate(x, startY);
+  const bodyY = isTop ? -height : 0;
+  const accentWidth = Math.max(6, width * 0.16);
+
+  ctx.fillStyle = style.body;
+  ctx.fillRect(0, bodyY, width, height);
+
+  const facadeGradient = ctx.createLinearGradient(0, bodyY, width, bodyY + height);
+  facadeGradient.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+  facadeGradient.addColorStop(0.45, 'rgba(255, 255, 255, 0.1)');
+  facadeGradient.addColorStop(1, 'rgba(0, 0, 0, 0.12)');
+  ctx.fillStyle = facadeGradient;
+  ctx.fillRect(0, bodyY, width, height);
+
+  drawObstacleWindows(width, height, bodyY, style.window, seed, accentWidth);
+  drawObstacleGlassSheen(width, height, bodyY, style.highlight, isTop, accentWidth);
+
+  ctx.fillStyle = style.accent;
+  ctx.fillRect(width - accentWidth, bodyY, accentWidth, height);
+
+  drawObstacleRoof(width, bodyY, isTop, style.roof);
 
   ctx.restore();
 }
+
+function drawObstacleWindows(width, height, bodyY, windowColor, seed, accentWidth) {
+  const leftMargin = Math.max(4, width * 0.08);
+  const rightMargin = Math.max(8, accentWidth + 6);
+  const topMargin = 14;
+  const bottomMargin = 18;
+  const windowWidth = Math.max(6, Math.min(12, width * 0.18));
+  const windowHeight = Math.max(8, Math.min(18, windowWidth * 1.4));
+  const spacingX = windowWidth + 6;
+  const spacingY = windowHeight + 8;
+  const startY = bodyY + topMargin;
+  const maxY = bodyY + height - bottomMargin - windowHeight;
+  const maxX = width - rightMargin - windowWidth;
+
+  if (leftMargin > maxX || startY > maxY) {
+    return;
+  }
+
+  let noiseIndex = 0;
+  for (let y = startY; y <= maxY; y += spacingY) {
+    for (let x = leftMargin; x <= maxX; x += spacingX) {
+      const flicker = seededRandom(seed + noiseIndex * 0.71);
+      const glow = flicker > 0.82;
+      const dim = flicker < 0.16;
+
+      ctx.fillStyle = windowColor;
+      ctx.fillRect(x, y, windowWidth, windowHeight);
+
+      if (glow) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+        ctx.fillRect(x, y, windowWidth, windowHeight);
+      } else if (dim) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.24)';
+        ctx.fillRect(x, y, windowWidth, windowHeight);
+      }
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.fillRect(x + windowWidth * 0.12, y + 1, windowWidth * 0.32, 2);
+      ctx.fillRect(x + windowWidth * 0.65, y + windowHeight * 0.55, windowWidth * 0.22, 2);
+
+      noiseIndex += 1;
+    }
+  }
+}
+
+function drawObstacleGlassSheen(width, height, bodyY, highlightColor, isTop, accentWidth) {
+  const facadeWidth = width - accentWidth;
+  if (facadeWidth <= 0) {
+    return;
+  }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, bodyY, facadeWidth, height);
+  ctx.clip();
+
+  const sheenWidth = facadeWidth * 0.18;
+  const sheenGradient = ctx.createLinearGradient(0, bodyY, sheenWidth, bodyY + height);
+  sheenGradient.addColorStop(0, highlightColor);
+  sheenGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = sheenGradient;
+  ctx.fillRect(0, bodyY, sheenWidth, height);
+
+  ctx.globalAlpha = 0.12;
+  const stripeWidth = facadeWidth * 0.65;
+  for (let offset = -height * 1.2; offset < facadeWidth + height; offset += stripeWidth * 0.5) {
+    ctx.beginPath();
+    const topY = bodyY;
+    const bottomY = bodyY + height;
+    if (isTop) {
+      ctx.moveTo(offset - stripeWidth * 0.4, topY);
+      ctx.lineTo(offset + stripeWidth * 0.12, topY);
+      ctx.lineTo(offset + stripeWidth * 0.35, bottomY);
+      ctx.lineTo(offset - stripeWidth * 0.18, bottomY);
+    } else {
+      ctx.moveTo(offset - stripeWidth * 0.18, bottomY);
+      ctx.lineTo(offset + stripeWidth * 0.35, bottomY);
+      ctx.lineTo(offset + stripeWidth * 0.12, topY);
+      ctx.lineTo(offset - stripeWidth * 0.4, topY);
+    }
+    ctx.closePath();
+    ctx.fillStyle = highlightColor;
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawObstacleRoof(width, bodyY, isTop, roofColor) {
+  ctx.fillStyle = roofColor;
+  if (isTop) {
+    ctx.fillRect(0, 0, width, 5);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    ctx.fillRect(0, 3, width, 2);
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(0, bodyY);
+    ctx.lineTo(width * 0.5, bodyY - 12);
+    ctx.lineTo(width, bodyY);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
 
 function drawPlane() {
   ctx.save();
