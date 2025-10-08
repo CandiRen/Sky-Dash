@@ -7,6 +7,9 @@ const planeMenuToggle = document.getElementById("planeMenuToggle");
 const planeMenuOverlay = document.getElementById("planeMenuOverlay");
 const planeGrid = document.getElementById("planeGrid");
 const closePlaneMenu = document.getElementById("closePlaneMenu");
+const planeUploadButton = document.getElementById("planeUploadButton");
+const planeUploadInput = document.getElementById("planeUploadInput");
+const planeUploadStatus = document.getElementById("planeUploadStatus");
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
@@ -375,10 +378,52 @@ const planeDefinitions = [
   },
 ];
 
+const customPlaneDefinition = {
+  id: "custom-upload",
+  airframe: "image",
+  name: "Unggahan PNG",
+  description: "Unggah gambar PNG milikmu.",
+  palette: {
+    outline: "#1c4f7a",
+    fuselage: "#ffffff",
+    belly: "#c7e6ff",
+  },
+  image: null,
+  imageSrc: "",
+  renderSize: null,
+};
+
+const CUSTOM_PLANE_INDEX = planeDefinitions.push(customPlaneDefinition) - 1;
+
+function calculateCustomPlaneSize(image) {
+  const naturalWidth = image?.naturalWidth ?? 0;
+  const naturalHeight = image?.naturalHeight ?? 0;
+  if (!naturalWidth || !naturalHeight) {
+    return { width: PLANE_HITBOX.width, height: PLANE_HITBOX.height };
+  }
+
+  const maxWidth = PLANE_HITBOX.width;
+  const maxHeight = PLANE_HITBOX.height;
+  const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight);
+
+  return {
+    width: naturalWidth * scale,
+    height: naturalHeight * scale,
+  };
+}
+
+function getDefinitionSize(definition) {
+  if (definition?.airframe === "image" && definition?.renderSize) {
+    return definition.renderSize;
+  }
+  return { width: PLANE_HITBOX.width, height: PLANE_HITBOX.height };
+}
+
 const airframeLabels = {
   jet: "Jet",
   prop: "Propeler",
   stealth: "Stealth",
+  image: "Unggahan",
 };
 
 let planeDefinition = planeDefinitions[0];
@@ -391,6 +436,12 @@ const plane = {
   velocity: 0,
   rotation: 0,
 };
+
+function syncPlaneDimensions(definition) {
+  const size = getDefinitionSize(definition);
+  plane.width = size.width;
+  plane.height = size.height;
+}
 
 const physics = {
   gravity: 1350,
@@ -471,12 +522,16 @@ const inputState = {
 };
 
 function applyPlaneDefinition(index) {
-  if (!planeDefinitions[index]) {
+  const definition = planeDefinitions[index];
+  if (!definition) {
     return;
   }
-  planeDefinition = planeDefinitions[index];
-  plane.width = PLANE_HITBOX.width;
-  plane.height = PLANE_HITBOX.height;
+
+  if (definition.airframe === "image" && !definition.image) {
+    return;
+  }
+  planeDefinition = definition;
+  syncPlaneDimensions(definition);
   plane.rotation = 0;
   state.selectedPlaneIndex = index;
   updatePlaneMenuSelection();
@@ -489,15 +544,39 @@ function createPlaneMenu() {
     card.type = "button";
     card.className = "plane-card";
     card.dataset.index = index;
-    const palette = def.palette;
     const typeLabel = airframeLabels[def.airframe] || def.airframe;
-    card.innerHTML = `
-      <span class="plane-preview" data-airframe="${def.airframe}" style="--plane-top:${palette.fuselage}; --plane-belly:${palette.belly}; --plane-outline:${palette.outline}; --plane-detail:${palette.engine || palette.belly}; --plane-window:${palette.window || palette.outline}"></span>
-      <strong>${def.name}</strong>
-      <span class="plane-tag">${typeLabel}</span>
-      <span class="caption">${def.description}</span>
-    `;
+
+    if (def.airframe === "image") {
+      card.classList.add("plane-card--image");
+      const hasImage = Boolean(def.image);
+      const previewContent = hasImage
+        ? `<img src="${def.imageSrc}" alt="Pesawat unggahan pengguna">`
+        : '<span class="plane-preview__placeholder">PNG</span>';
+      const caption = hasImage
+        ? "Klik untuk memakai unggahanmu."
+        : "Unggah PNG untuk menampilkan pesawatmu.";
+      card.innerHTML = `
+        <span class="plane-preview plane-preview--image">${previewContent}</span>
+        <strong>${def.name}</strong>
+        <span class="plane-tag">${typeLabel}</span>
+        <span class="caption">${caption}</span>
+      `;
+    } else {
+      const palette = def.palette;
+      card.innerHTML = `
+        <span class="plane-preview" data-airframe="${def.airframe}" style="--plane-top:${palette.fuselage}; --plane-belly:${palette.belly}; --plane-outline:${palette.outline}; --plane-detail:${palette.engine || palette.belly}; --plane-window:${palette.window || palette.outline}"></span>
+        <strong>${def.name}</strong>
+        <span class="plane-tag">${typeLabel}</span>
+        <span class="caption">${def.description}</span>
+      `;
+    }
+
     card.addEventListener("click", () => {
+      if (def.airframe === "image" && !def.image) {
+        updateUploadStatus("Pilih berkas PNG dari perangkatmu untuk mengganti pesawat.");
+        planeUploadInput?.click();
+        return;
+      }
       if (state.selectedPlaneIndex !== index) {
         applyPlaneDefinition(index);
         resetGame();
@@ -517,6 +596,70 @@ function updatePlaneMenuSelection() {
     const idx = Number(card.dataset.index);
     card.classList.toggle("active", idx === state.selectedPlaneIndex);
   });
+}
+
+function updateUploadStatus(message, state = "info") {
+  if (!planeUploadStatus) {
+    return;
+  }
+  planeUploadStatus.textContent = message;
+  if (state === "info") {
+    planeUploadStatus.removeAttribute("data-state");
+  } else {
+    planeUploadStatus.dataset.state = state;
+  }
+}
+
+function handlePlaneUpload(event) {
+  const input = event.target;
+  const file = input?.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  const mime = file.type?.toLowerCase?.() ?? "";
+  if (!mime.includes("png")) {
+    updateUploadStatus("Harap pilih berkas dengan format PNG.", "error");
+    input.value = "";
+    return;
+  }
+
+  updateUploadStatus("Memuat gambar PNG…");
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    if (typeof result !== "string") {
+      updateUploadStatus("Tidak dapat membaca berkas PNG.", "error");
+      input.value = "";
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      customPlaneDefinition.image = image;
+      customPlaneDefinition.imageSrc = result;
+      customPlaneDefinition.renderSize = calculateCustomPlaneSize(image);
+      updateUploadStatus(
+        `PNG terunggah (${image.naturalWidth}×${image.naturalHeight}). Pesawat otomatis digunakan.`,
+        "success",
+      );
+      applyPlaneDefinition(CUSTOM_PLANE_INDEX);
+      resetGame();
+      hidePlaneMenu();
+      createPlaneMenu();
+      input.value = "";
+    };
+    image.onerror = () => {
+      updateUploadStatus("Gagal memuat gambar PNG.", "error");
+      input.value = "";
+    };
+    image.src = result;
+  };
+  reader.onerror = () => {
+    updateUploadStatus("Tidak dapat membaca berkas PNG.", "error");
+    input.value = "";
+  };
+  reader.readAsDataURL(file);
 }
 
 function showPlaneMenu() {
@@ -959,466 +1102,64 @@ function drawPipes() {
   }
 }
 
-function drawJetAirframe(palette) {
+function drawUnifiedAirframe(palette) {
   const outline = palette.outline;
   const fuselage = palette.fuselage;
-  const belly = palette.belly;
-  const tail = palette.tail;
-  const farWing = palette.farWing || belly;
-  const windowColor = palette.window || outline;
-  const engineColor = palette.engine || fuselage;
-  const engineCore = palette.engineCore || belly;
+  const belly = palette.belly || fuselage;
 
-  // Far wings
-  ctx.fillStyle = farWing;
-  ctx.beginPath();
-  ctx.moveTo(-28, -6);
-  ctx.lineTo(8, -24);
-  ctx.lineTo(-12, -26);
-  ctx.lineTo(-42, -12);
-  ctx.closePath();
-  ctx.fill();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
 
-  ctx.beginPath();
-  ctx.moveTo(-40, 10);
-  ctx.lineTo(6, 24);
-  ctx.lineTo(-10, 26);
-  ctx.lineTo(-52, 14);
-  ctx.closePath();
-  ctx.fill();
+  const gradient = ctx.createLinearGradient(-110, -32, -110, 26);
+  gradient.addColorStop(0, fuselage);
+  gradient.addColorStop(0.6, fuselage);
+  gradient.addColorStop(1, belly);
 
-  // Tail and stabilizers
-  ctx.fillStyle = tail;
+  const silhouette = new Path2D();
+  silhouette.moveTo(-96, -4);
+  silhouette.quadraticCurveTo(-52, -22, -14, -20);
+  silhouette.quadraticCurveTo(2, -22, 6, -30);
+  silhouette.quadraticCurveTo(22, -32, 34, -42);
+  silhouette.quadraticCurveTo(46, -48, 40, -20);
+  silhouette.quadraticCurveTo(72, -16, 84, 0);
+  silhouette.quadraticCurveTo(88, 10, 52, 12);
+  silhouette.quadraticCurveTo(24, 16, -22, 18);
+  silhouette.quadraticCurveTo(-68, 20, -96, 8);
+  silhouette.quadraticCurveTo(-112, 4, -96, -4);
+  silhouette.closePath();
+
+  ctx.fillStyle = gradient;
+  ctx.fill(silhouette);
   ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.moveTo(-64, -5);
-  ctx.lineTo(-86, -30);
-  ctx.lineTo(-52, -18);
-  ctx.lineTo(-50, -6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(-54, -1);
-  ctx.lineTo(-74, 2);
-  ctx.lineTo(-48, 5);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(-56, -2);
-  ctx.lineTo(-78, -4);
-  ctx.lineTo(-48, -6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Fuselage
-  ctx.fillStyle = fuselage;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-70, -6);
-  ctx.quadraticCurveTo(-38, -18, 54, -16);
-  ctx.quadraticCurveTo(78, -8, 80, -2);
-  ctx.lineTo(80, 2);
-  ctx.quadraticCurveTo(78, 8, 54, 18);
-  ctx.quadraticCurveTo(-38, 20, -70, 8);
-  ctx.quadraticCurveTo(-80, 4, -80, 0);
-  ctx.quadraticCurveTo(-80, -4, -70, -6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Belly stripe
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(-70, -6);
-  ctx.quadraticCurveTo(-38, -18, 54, -16);
-  ctx.quadraticCurveTo(78, -8, 80, -2);
-  ctx.lineTo(80, 20);
-  ctx.lineTo(-82, 20);
-  ctx.closePath();
-  ctx.clip();
-  ctx.fillStyle = belly;
-  ctx.beginPath();
-  ctx.moveTo(-66, 2);
-  ctx.quadraticCurveTo(-18, 16, 48, 14);
-  ctx.lineTo(54, 14);
-  ctx.quadraticCurveTo(-12, 22, -74, 7);
-  ctx.quadraticCurveTo(-76, 4, -76, 2);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-
-  // Dorsal fin
-  ctx.fillStyle = tail;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(-4, -8);
-  ctx.lineTo(12, -28);
-  ctx.lineTo(10, -6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Underside accents
-  ctx.fillStyle = belly;
-  ctx.beginPath();
-  ctx.moveTo(0, 2);
-  ctx.lineTo(48, -18);
-  ctx.lineTo(44, -6);
-  ctx.lineTo(-2, 8);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(-36, 8);
-  ctx.lineTo(14, 24);
-  ctx.lineTo(10, 16);
-  ctx.lineTo(-34, 6);
-  ctx.closePath();
-  ctx.fill();
-
-  // Engine
-  ctx.fillStyle = engineColor;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.ellipse(14, 12, 12, 7, 0.08, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = engineCore;
-  ctx.beginPath();
-  ctx.ellipse(17, 12, 7, 4.6, 0.08, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = outline;
-  ctx.beginPath();
-  ctx.ellipse(6, 12, 3.6, 3.2, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Near wings
-  ctx.fillStyle = fuselage;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(-8, 0);
-  ctx.lineTo(32, -22);
-  ctx.lineTo(52, -16);
-  ctx.lineTo(6, 4);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(-24, 4);
-  ctx.lineTo(30, 18);
-  ctx.lineTo(12, 22);
-  ctx.lineTo(-40, 10);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Winglets
-  ctx.fillStyle = tail;
-  ctx.beginPath();
-  ctx.moveTo(52, -16);
-  ctx.lineTo(60, -2);
-  ctx.lineTo(46, -4);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(30, 18);
-  ctx.lineTo(38, 6);
-  ctx.lineTo(24, 8);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Cockpit windows
-  ctx.fillStyle = windowColor;
-  ctx.beginPath();
-  ctx.moveTo(30, -6);
-  ctx.quadraticCurveTo(44, -6, 50, -2);
-  ctx.lineTo(32, -2);
-  ctx.quadraticCurveTo(30, -4, 28, -4);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(26, -3);
-  ctx.lineTo(30, -1);
-  ctx.lineTo(24, -1);
-  ctx.closePath();
-  ctx.fill();
-
-  // Passenger windows
-  ctx.fillStyle = windowColor;
-  const windowPositions = [-42, -36, -30, -24, -18, -12, -6, 0, 6, 12, 18, 24, 30];
-  for (const wx of windowPositions) {
-    ctx.fillRect(wx - 2.2, -3, 4.4, 5.4);
-  }
-
-  // Door outline
-  ctx.lineWidth = 1.1;
-  ctx.strokeStyle = outline;
-  ctx.strokeRect(-28, -6, 6, 14);
-}
-
-function drawPropAirframe(palette) {
-  const outline = palette.outline;
-  const fuselage = palette.fuselage;
-  const belly = palette.belly;
-  const tail = palette.tail;
-  const farWing = palette.farWing || belly;
-  const windowColor = palette.window || outline;
-  const engineColor = palette.engine || fuselage;
-  const engineCore = palette.engineCore || belly;
-
-  // Back wings for depth
-  ctx.fillStyle = farWing;
-  ctx.beginPath();
-  ctx.moveTo(-52, -8);
-  ctx.lineTo(6, -28);
-  ctx.lineTo(-16, -30);
-  ctx.lineTo(-70, -14);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(-56, 10);
-  ctx.lineTo(4, 30);
-  ctx.lineTo(-18, 32);
-  ctx.lineTo(-74, 18);
-  ctx.closePath();
-  ctx.fill();
-
-  // Tailplane
-  ctx.fillStyle = tail;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.moveTo(-88, -6);
-  ctx.lineTo(-116, -34);
-  ctx.lineTo(-98, 10);
-  ctx.lineTo(-84, 16);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Fuselage capsule
-  ctx.fillStyle = fuselage;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-112, -10);
-  ctx.quadraticCurveTo(-46, -34, 74, -10);
-  ctx.quadraticCurveTo(92, -2, 92, 0);
-  ctx.quadraticCurveTo(92, 2, 74, 10);
-  ctx.quadraticCurveTo(-46, 34, -112, 12);
-  ctx.quadraticCurveTo(-124, 6, -124, 0);
-  ctx.quadraticCurveTo(-124, -6, -112, -10);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Belly striping
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(-112, -10);
-  ctx.quadraticCurveTo(-46, -34, 74, -10);
-  ctx.quadraticCurveTo(92, -2, 92, 0);
-  ctx.quadraticCurveTo(92, 2, 74, 10);
-  ctx.quadraticCurveTo(-46, 34, -112, 12);
-  ctx.quadraticCurveTo(-124, 6, -124, 0);
-  ctx.quadraticCurveTo(-124, -6, -112, -10);
-  ctx.closePath();
-  ctx.clip();
-  ctx.fillStyle = belly;
-  ctx.beginPath();
-  ctx.moveTo(-102, 4);
-  ctx.quadraticCurveTo(-54, 20, 70, 14);
-  ctx.quadraticCurveTo(-24, 30, -114, 16);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-
-  // Main wings
-  ctx.fillStyle = fuselage;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(-38, -6);
-  ctx.lineTo(30, -20);
-  ctx.lineTo(58, -12);
-  ctx.lineTo(-12, 6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(-50, 6);
-  ctx.lineTo(26, 26);
-  ctx.lineTo(-6, 32);
-  ctx.lineTo(-72, 12);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Propeller hub and blades
-  ctx.fillStyle = engineColor;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(92, 0, 9, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.strokeStyle = engineCore;
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(92, -18);
-  ctx.lineTo(92, 18);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(70, 0);
-  ctx.lineTo(114, 0);
-  ctx.stroke();
-
-  // Cockpit glazing
-  ctx.fillStyle = windowColor;
-  ctx.beginPath();
-  ctx.moveTo(22, -6);
-  ctx.quadraticCurveTo(46, -6, 60, -2);
-  ctx.lineTo(22, -2);
-  ctx.quadraticCurveTo(20, -4, 18, -4);
-  ctx.closePath();
-  ctx.fill();
-
-  // Cabin windows
-  const propWindows = [-78, -66, -54, -42, -30, -18, -6, 6];
-  ctx.fillStyle = windowColor;
-  for (const wx of propWindows) {
-    ctx.fillRect(wx - 3, -4, 6, 6.2);
-  }
-
-  // Door outline
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(-56, -6, 6, 16);
-}
-
-function drawStealthAirframe(palette) {
-  const outline = palette.outline;
-  const fuselage = palette.fuselage;
-  const belly = palette.belly;
-  const tail = palette.tail;
-  const farWing = palette.farWing || belly;
-  const windowColor = palette.window || outline;
-  const engineColor = palette.engine || fuselage;
-
-  // Shadowed wing planes
-  ctx.fillStyle = farWing;
-  ctx.beginPath();
-  ctx.moveTo(-62, -6);
-  ctx.lineTo(-4, -34);
-  ctx.lineTo(32, -18);
-  ctx.lineTo(-18, -6);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(-62, 6);
-  ctx.lineTo(-4, 34);
-  ctx.lineTo(32, 18);
-  ctx.lineTo(-18, 6);
-  ctx.closePath();
-  ctx.fill();
-
-  // Main stealth body
-  ctx.fillStyle = fuselage;
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-96, 0);
-  ctx.lineTo(-26, -38);
-  ctx.lineTo(96, -8);
-  ctx.lineTo(96, 8);
-  ctx.lineTo(-26, 38);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // Belly facets
-  ctx.fillStyle = belly;
-  ctx.beginPath();
-  ctx.moveTo(-78, 10);
-  ctx.lineTo(62, 6);
-  ctx.lineTo(-18, 28);
-  ctx.lineTo(-86, 16);
-  ctx.closePath();
-  ctx.fill();
-
-  // Tail notch
-  ctx.fillStyle = tail;
-  ctx.beginPath();
-  ctx.moveTo(-96, 0);
-  ctx.lineTo(-116, -8);
-  ctx.lineTo(-114, 8);
-  ctx.closePath();
-  ctx.fill();
-
-  // Engine intakes
-  ctx.fillStyle = engineColor;
-  ctx.beginPath();
-  ctx.ellipse(26, -2, 14, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(26, 2, 14, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Cockpit canopy
-  ctx.fillStyle = windowColor;
-  ctx.beginPath();
-  ctx.moveTo(6, -10);
-  ctx.lineTo(44, -6);
-  ctx.lineTo(10, 8);
-  ctx.lineTo(-2, 4);
-  ctx.closePath();
-  ctx.fill();
-
-  // Panel lines for definition
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(-20, -4);
-  ctx.lineTo(32, -2);
-  ctx.lineTo(-20, 6);
-  ctx.stroke();
+  ctx.lineWidth = 2.4;
+  ctx.stroke(silhouette);
 }
 
 const airframeRenderers = {
-  jet: drawJetAirframe,
-  prop: drawPropAirframe,
-  stealth: drawStealthAirframe,
+  jet: drawUnifiedAirframe,
+  prop: drawUnifiedAirframe,
+  stealth: drawUnifiedAirframe,
 };
 
 function drawPlane() {
-  const { palette, airframe = "jet" } = planeDefinition;
-  const renderer = airframeRenderers[airframe] || airframeRenderers.jet;
-
+  const definition = planeDefinition;
   ctx.save();
   ctx.translate(plane.x, plane.y);
-  ctx.rotate(plane.rotation);
-  renderer(palette);
+
+  if (definition.airframe === "image" && definition.image) {
+    const size = getDefinitionSize(definition);
+    ctx.rotate(plane.rotation);
+    ctx.drawImage(definition.image, -size.width * 0.5, -size.height * 0.5, size.width, size.height);
+  } else {
+    const { palette, airframe = "jet" } = definition;
+    const renderer = airframeRenderers[airframe] || airframeRenderers.jet;
+    // Mirror the airframe geometry so that every plane faces arah terbang.
+    // Rotation is negated after the horizontal flip to preserve the original pitching behaviour.
+    ctx.scale(-1, 1);
+    ctx.rotate(-plane.rotation);
+    renderer(palette);
+  }
+
   ctx.restore();
 }
 
@@ -1530,6 +1271,16 @@ planeMenuToggle.addEventListener("click", () => {
 closePlaneMenu.addEventListener("click", () => {
   hidePlaneMenu();
 });
+
+if (planeUploadButton) {
+  planeUploadButton.addEventListener("click", () => {
+    planeUploadInput?.click();
+  });
+}
+
+if (planeUploadInput) {
+  planeUploadInput.addEventListener("change", handlePlaneUpload);
+}
 
 planeMenuOverlay.addEventListener("click", (event) => {
   if (event.target === planeMenuOverlay) {
