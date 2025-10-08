@@ -33,8 +33,13 @@
         <h2>Pilih Pesawat</h2>
         <button id="closePlaneMenu" type="button" aria-label="Tutup">×</button>
       </header>
-      <p class="plane-menu__subtitle">Pilih salah satu dari 22 pesawat dengan tipe berbeda. Mengganti pesawat akan mereset permainan.</p>
+      <p class="plane-menu__subtitle">Pilih pesawat favoritmu atau unggah gambar PNG sendiri. Mengganti pesawat akan mereset permainan.</p>
       <div id="planeGrid" class="plane-menu__grid"></div>
+      <div class="plane-menu__upload">
+        <button id="planeUploadButton" type="button">Unggah / Ganti PNG</button>
+        <input id="planeUploadInput" type="file" accept="image/png" hidden>
+        <p id="planeUploadStatus" class="plane-menu__upload-status">Belum ada gambar PNG terunggah.</p>
+      </div>
     </div>
   </div>
 
