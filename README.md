@@ -6,6 +6,7 @@ Sky Dash adalah gim bergaya Flappy Bird dengan tema pesawat yang melintasi langi
 - Latar belakang kota dengan gedung tinggi yang bergerak parallax.
 - Kontrol sederhana (klik/tap atau tombol spasi/arrow up).
 - Sistem skor yang bertambah setiap berhasil melewati badai awan.
+- Menu pemilihan 20 pesawat dengan skema warna berbeda.
 - Antarmuka ringan yang kompatibel dengan desktop dan perangkat sentuh.
 
 ## Cara Menjalankan
@@ -20,6 +21,7 @@ Sky Dash adalah gim bergaya Flappy Bird dengan tema pesawat yang melintasi langi
 ## Cara Bermain
 - Klik tombol **Mulai** atau tekan `Space` untuk memulai gim sekaligus melakukan dorongan pertama.
 - Klik/tap di dalam area gim atau tekan `Space`/`Arrow Up` untuk menjaga pesawat tetap naik.
+- Gunakan tombol **Pilih Pesawat** untuk membuka menu dan memilih salah satu dari 20 pesawat sebelum terbang.
 - Hindari menabrak badai awan yang muncul dari atas dan bawah.
 - Setelah Game Over, tekan tombol **Ulangi** atau tombol `R` untuk bermain kembali.
 

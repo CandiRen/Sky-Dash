@@ -18,10 +18,26 @@
     <canvas id="gameCanvas" width="420" height="640"></canvas>
     <section class="instructions">
       <p>Tekan atau klik untuk membuat pesawat naik. Hindari badai awan!</p>
-      <button id="startButton">Mulai</button>
-      <button id="restartButton" hidden>Ulangi</button>
+      <div class="instruction-buttons">
+        <button id="startButton">Mulai</button>
+        <button id="restartButton" hidden>Ulangi</button>
+        <button id="planeMenuToggle" type="button">Pilih Pesawat</button>
+      </div>
+      <p class="hint">Klik "Pilih Pesawat" untuk mengganti pesawatmu sebelum terbang.</p>
     </section>
   </main>
+
+  <div id="planeMenuOverlay" class="plane-menu" hidden>
+    <div class="plane-menu__panel">
+      <header class="plane-menu__header">
+        <h2>Pilih Pesawat</h2>
+        <button id="closePlaneMenu" type="button" aria-label="Tutup">×</button>
+      </header>
+      <p class="plane-menu__subtitle">Pilih salah satu dari 22 pesawat dengan tipe berbeda. Mengganti pesawat akan mereset permainan.</p>
+      <div id="planeGrid" class="plane-menu__grid"></div>
+    </div>
+  </div>
+
   <script type="module" src="scripts/game.js"></script>
 </body>
 </html>
