@@ -10,6 +10,8 @@ const closePlaneMenu = document.getElementById("closePlaneMenu");
 const planeUploadButton = document.getElementById("planeUploadButton");
 const planeUploadInput = document.getElementById("planeUploadInput");
 const planeUploadStatus = document.getElementById("planeUploadStatus");
+const planeScaleInput = document.getElementById("planeScaleInput");
+const planeScaleValue = document.getElementById("planeScaleValue");
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
@@ -23,11 +25,14 @@ const PLANE_BASE_SIZE = {
   height: 48,
 };
 
-const PLANE_SCALE = 2;
+const DEFAULT_PLANE_SCALE = 2;
+const PLANE_SCALE_MIN = 0.5;
+const PLANE_SCALE_MAX = 2.5;
+let currentPlaneScale = DEFAULT_PLANE_SCALE;
 
 const PLANE_HITBOX = {
-  width: PLANE_BASE_SIZE.width * PLANE_SCALE,
-  height: PLANE_BASE_SIZE.height * PLANE_SCALE,
+  width: PLANE_BASE_SIZE.width * currentPlaneScale,
+  height: PLANE_BASE_SIZE.height * currentPlaneScale,
 };
 
 const planeDefinitions = [];
@@ -327,8 +332,8 @@ function calculateCustomPlaneSize(image) {
 function getDefinitionSize(definition) {
   if (definition?.airframe === "image" && definition?.renderSize) {
     return {
-      width: definition.renderSize.width * PLANE_SCALE,
-      height: definition.renderSize.height * PLANE_SCALE,
+      width: definition.renderSize.width * currentPlaneScale,
+      height: definition.renderSize.height * currentPlaneScale,
     };
   }
   return { width: PLANE_HITBOX.width, height: PLANE_HITBOX.height };
@@ -428,11 +433,49 @@ const state = {
   score: 0,
   readyTick: 0,
   selectedPlaneIndex: 0,
+  planeScale: currentPlaneScale,
 };
 
 const inputState = {
   isPointerDown: false,
 };
+
+function clampPlaneScale(scale) {
+  if (Number.isNaN(scale)) {
+    return currentPlaneScale;
+  }
+  return Math.min(PLANE_SCALE_MAX, Math.max(PLANE_SCALE_MIN, scale));
+}
+
+function updatePlaneScaleUI() {
+  if (!planeScaleInput || !planeScaleValue) {
+    return;
+  }
+  const percent = Math.round(currentPlaneScale * 100);
+  if (Number(planeScaleInput.value) !== percent) {
+    planeScaleInput.value = percent.toString();
+  }
+  planeScaleValue.textContent = `${percent}%`;
+}
+
+function setPlaneScale(scale, { triggerReset = true, force = false } = {}) {
+  const nextScale = clampPlaneScale(scale);
+  if (!force && Math.abs(nextScale - currentPlaneScale) < 0.001) {
+    updatePlaneScaleUI();
+    return;
+  }
+
+  currentPlaneScale = nextScale;
+  state.planeScale = currentPlaneScale;
+  PLANE_HITBOX.width = PLANE_BASE_SIZE.width * currentPlaneScale;
+  PLANE_HITBOX.height = PLANE_BASE_SIZE.height * currentPlaneScale;
+
+  syncPlaneDimensions(planeDefinition);
+  if (triggerReset) {
+    resetGame();
+  }
+  updatePlaneScaleUI();
+}
 
 function applyPlaneDefinition(index) {
   const definition = planeDefinitions[index];
@@ -1160,6 +1203,18 @@ if (planeUploadButton) {
 
 if (planeUploadInput) {
   planeUploadInput.addEventListener("change", handlePlaneUpload);
+}
+
+if (planeScaleInput) {
+  planeScaleInput.addEventListener("input", (event) => {
+    const value = Number(event.target.value) / 100;
+    setPlaneScale(value, { triggerReset: false });
+  });
+  planeScaleInput.addEventListener("change", (event) => {
+    const value = Number(event.target.value) / 100;
+    setPlaneScale(value, { triggerReset: true, force: true });
+  });
+  updatePlaneScaleUI();
 }
 
 planeMenuOverlay.addEventListener("click", (event) => {

@@ -35,6 +35,11 @@
       </header>
       <p class="plane-menu__subtitle">Pilih pesawat favoritmu atau unggah gambar PNG sendiri. Mengganti pesawat akan mereset permainan.</p>
       <div id="planeGrid" class="plane-menu__grid"></div>
+      <div class="plane-menu__controls">
+        <label for="planeScaleInput">Ukuran Pesawat: <span id="planeScaleValue">200%</span></label>
+        <input id="planeScaleInput" type="range" min="50" max="250" step="5" value="200">
+        <p class="plane-menu__controls-hint">Sesuaikan skala pesawat saat ini (50% - 250%).</p>
+      </div>
       <div class="plane-menu__upload">
         <button id="planeUploadButton" type="button">Unggah / Ganti PNG</button>
         <input id="planeUploadInput" type="file" accept="image/png" hidden>
