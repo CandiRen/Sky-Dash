@@ -23,363 +23,270 @@ const PLANE_HITBOX = {
   height: 48,
 };
 
-const planeDefinitions = [
-  {
-    id: "aurora-blue",
-    airframe: "jet",
-    name: "Aurora Blue",
-    description: "Warna biru laut dengan ekor aqua",
-    palette: {
-      outline: "#082036",
-      fuselage: "#ffffff",
-      belly: "#14708c",
-      tail: "#1a5476",
-      farWing: "#0f3248",
-      window: "#082036",
-      engine: "#ffffff",
-      engineCore: "#14708c",
-    },
-  },
-  {
-    id: "crimson-jet",
-    airframe: "jet",
-    name: "Crimson Jet",
-    description: "Livery merah mencolok",
-    palette: {
-      outline: "#320f1f",
-      fuselage: "#fff4f4",
-      belly: "#d94343",
-      tail: "#7c1428",
-      farWing: "#4a0d19",
-      window: "#320f1f",
-      engine: "#fff4f4",
-      engineCore: "#d94343",
-    },
-  },
-  {
-    id: "emerald-breeze",
-    airframe: "prop",
-    name: "Emerald Breeze",
-    description: "Hijau zamrud yang segar",
-    palette: {
-      outline: "#0f2c23",
-      fuselage: "#f8fffb",
-      belly: "#1ea87a",
-      tail: "#127c58",
-      farWing: "#0e4735",
-      window: "#0f2c23",
-      engine: "#f8fffb",
-      engineCore: "#1ea87a",
-    },
-  },
-  {
-    id: "sunrise-gold",
-    airframe: "prop",
-    name: "Sunrise Gold",
-    description: "Gradasi jingga keemasan",
-    palette: {
-      outline: "#3a1b0f",
-      fuselage: "#fffdf6",
-      belly: "#f39c27",
-      tail: "#d6711a",
-      farWing: "#542b11",
-      window: "#3a1b0f",
-      engine: "#fff7e2",
-      engineCore: "#f39c27",
-    },
-  },
-  {
-    id: "midnight-storm",
-    airframe: "stealth",
-    name: "Midnight Storm",
-    description: "Gelap elegan dengan aksen biru",
-    palette: {
-      outline: "#050d1a",
-      fuselage: "#f0f4ff",
-      belly: "#173f82",
-      tail: "#0b2858",
-      farWing: "#071839",
-      window: "#050d1a",
-      engine: "#f0f4ff",
-      engineCore: "#173f82",
-    },
-  },
-  {
-    id: "arctic-frost",
-    airframe: "jet",
-    name: "Arctic Frost",
-    description: "Biru muda es dengan ekor putih",
-    palette: {
-      outline: "#123041",
-      fuselage: "#ffffff",
-      belly: "#7bd0ff",
-      tail: "#2e6f9d",
-      farWing: "#124561",
-      window: "#123041",
-      engine: "#ffffff",
-      engineCore: "#7bd0ff",
-    },
-  },
-  {
-    id: "tropic-coral",
-    airframe: "prop",
-    name: "Tropic Coral",
-    description: "Coral dan biru laut tropis",
-    palette: {
-      outline: "#3a1f29",
-      fuselage: "#fff9f6",
-      belly: "#ff7660",
-      tail: "#dd3d3a",
-      farWing: "#5a1c2d",
-      window: "#2a1116",
-      engine: "#fff9f6",
-      engineCore: "#ff7660",
-    },
-  },
-  {
-    id: "galaxy-violet",
-    airframe: "jet",
-    name: "Galaxy Violet",
-    description: "Ungu lembut dengan belly biru tua",
-    palette: {
-      outline: "#1d0f2d",
-      fuselage: "#f5f2ff",
-      belly: "#6c4ddc",
-      tail: "#472a9d",
-      farWing: "#28134f",
-      window: "#1d0f2d",
-      engine: "#f5f2ff",
-      engineCore: "#6c4ddc",
-    },
-  },
-  {
-    id: "sahara-sand",
-    airframe: "prop",
-    name: "Sahara Sand",
-    description: "Tone pasir hangat",
-    palette: {
-      outline: "#3a2714",
-      fuselage: "#fffaf2",
-      belly: "#d4a46a",
-      tail: "#a9783e",
-      farWing: "#55381e",
-      window: "#3a2714",
-      engine: "#fff4de",
-      engineCore: "#d4a46a",
-    },
-  },
-  {
-    id: "neon-mint",
-    airframe: "jet",
-    name: "Neon Mint",
-    description: "Mint segar dengan kontras gelap",
-    palette: {
-      outline: "#05252a",
-      fuselage: "#f4fffb",
-      belly: "#1dd3a7",
-      tail: "#0a9880",
-      farWing: "#06473f",
-      window: "#05252a",
-      engine: "#f4fffb",
-      engineCore: "#1dd3a7",
-    },
-  },
-  {
-    id: "cinder-ember",
-    airframe: "stealth",
-    name: "Cinder Ember",
-    description: "Hitam arang dengan belly merah",
-    palette: {
-      outline: "#0a0a0a",
-      fuselage: "#f4f4f4",
-      belly: "#c63b30",
-      tail: "#76211c",
-      farWing: "#1e1e1e",
-      window: "#0a0a0a",
-      engine: "#f4f4f4",
-      engineCore: "#c63b30",
-    },
-  },
-  {
-    id: "copper-trail",
-    airframe: "prop",
-    name: "Copper Trail",
-    description: "Perpaduan tembaga dan krem",
-    palette: {
-      outline: "#2a150c",
-      fuselage: "#fff7f0",
-      belly: "#c2753b",
-      tail: "#8f4a1c",
-      farWing: "#4d2813",
-      window: "#2a150c",
-      engine: "#fff7f0",
-      engineCore: "#c2753b",
-    },
-  },
-  {
-    id: "oceanic-deep",
-    airframe: "jet",
-    name: "Oceanic Deep",
-    description: "Biru laut pekat",
-    palette: {
-      outline: "#05162e",
-      fuselage: "#f2f8ff",
-      belly: "#1d5fb8",
-      tail: "#0f3674",
-      farWing: "#0a1f46",
-      window: "#05162e",
-      engine: "#f2f8ff",
-      engineCore: "#1d5fb8",
-    },
-  },
-  {
-    id: "solar-flare",
-    airframe: "jet",
-    name: "Solar Flare",
-    description: "Oranye terang dengan ekor merah",
-    palette: {
-      outline: "#33130f",
-      fuselage: "#fff9f3",
-      belly: "#ff7b2f",
-      tail: "#d13a16",
-      farWing: "#5b1c11",
-      window: "#33130f",
-      engine: "#fff9f3",
-      engineCore: "#ff7b2f",
-    },
-  },
-  {
-    id: "jade-wing",
-    airframe: "prop",
-    name: "Jade Wing",
-    description: "Hijau giok minimalis",
-    palette: {
-      outline: "#082521",
-      fuselage: "#f5fffb",
-      belly: "#1d9c74",
-      tail: "#0f6e4f",
-      farWing: "#0a4b39",
-      window: "#082521",
-      engine: "#f5fffb",
-      engineCore: "#1d9c74",
-    },
-  },
-  {
-    id: "berry-cloud",
-    airframe: "jet",
-    name: "Berry Cloud",
-    description: "Perpaduan ungu & pink",
-    palette: {
-      outline: "#2a143a",
-      fuselage: "#fef6ff",
-      belly: "#c163e6",
-      tail: "#8e2ebb",
-      farWing: "#3f1a59",
-      window: "#2a143a",
-      engine: "#fef6ff",
-      engineCore: "#c163e6",
-    },
-  },
-  {
-    id: "nimbus-silver",
-    airframe: "stealth",
-    name: "Nimbus Silver",
-    description: "Abu elegan dengan aksen biru",
-    palette: {
-      outline: "#1b2430",
-      fuselage: "#f7f7f9",
-      belly: "#6d7e9c",
-      tail: "#3a4c68",
-      farWing: "#252f40",
-      window: "#1b2430",
-      engine: "#f7f7f9",
-      engineCore: "#6d7e9c",
-    },
-  },
-  {
-    id: "lagoon-teal",
-    airframe: "prop",
-    name: "Lagoon Teal",
-    description: "Teal kaya dengan ekor biru",
-    palette: {
-      outline: "#0b2131",
-      fuselage: "#f4fbff",
-      belly: "#1e9db7",
-      tail: "#126782",
-      farWing: "#0c4256",
-      window: "#0b2131",
-      engine: "#f4fbff",
-      engineCore: "#1e9db7",
-    },
-  },
-  {
-    id: "cobalt-dash",
-    airframe: "jet",
-    name: "Cobalt Dash",
-    description: "Cobalt tegas dengan ekor putih",
-    palette: {
-      outline: "#051833",
-      fuselage: "#ffffff",
-      belly: "#1c54d1",
-      tail: "#0c2f7a",
-      farWing: "#0a1f4f",
-      window: "#051833",
-      engine: "#ffffff",
-      engineCore: "#1c54d1",
-    },
-  },
-  {
-    id: "amber-horizon",
-    airframe: "prop",
-    name: "Amber Horizon",
-    description: "Amber dan krem senja",
-    palette: {
-      outline: "#3c200e",
-      fuselage: "#fff6ec",
-      belly: "#d98231",
-      tail: "#a65517",
-      farWing: "#542d13",
-      window: "#321a0b",
-      engine: "#fff6ec",
-      engineCore: "#d98231",
-    },
-  },
-  {
-    id: "onyx-ice",
-    airframe: "stealth",
-    name: "Onyx Ice",
-    description: "Hitam-putih dengan belly biru muda",
-    palette: {
-      outline: "#04090f",
-      fuselage: "#fefefe",
-      belly: "#6fb0ff",
-      tail: "#2d4f9c",
-      farWing: "#182a4f",
-      window: "#04090f",
-      engine: "#fefefe",
-      engineCore: "#6fb0ff",
-    },
-  },
-  {
-    id: "violet-sky",
-    airframe: "stealth",
-    name: "Violet Sky",
-    description: "Violet pastel dan biru muda",
-    palette: {
-      outline: "#1c1236",
-      fuselage: "#f6f2ff",
-      belly: "#8470ff",
-      tail: "#5a46c7",
-      farWing: "#2f1f77",
-      window: "#1c1236",
-      engine: "#f6f2ff",
-      engineCore: "#8470ff",
-    },
-  },
-];
+const planeDefinitions = [];
+
+const IMAGE_PLACEHOLDER_PALETTE = {
+  outline: "#1c4f7a",
+  fuselage: "#ffffff",
+  belly: "#c7e6ff",
+};
+
+const preloadedPlaneImages = new Map();
+
+async function populatePlanesFromFolder() {
+  const files = await discoverPlaneFiles();
+  const promises = files.map((file) => registerPlaneFromFile(file));
+  await Promise.all(promises);
+}
+
+function registerPlaneFromFile(file) {
+  const metadata = derivePlaneMetadata(file);
+  const imageUrl = new URL(`../plane/${file}`, import.meta.url).href;
+  const definition = {
+    id: metadata.id,
+    source: "folder",
+    file,
+    airframe: "image",
+    name: metadata.name,
+    description: metadata.description,
+    palette: IMAGE_PLACEHOLDER_PALETTE,
+    image: null,
+    imageSrc: imageUrl,
+    renderSize: null,
+  };
+
+  planeDefinitions.push(definition);
+
+  const preloadedImage = preloadedPlaneImages.get(file);
+  if (preloadedImage) {
+    preloadedPlaneImages.delete(file);
+    definition.image = preloadedImage;
+    definition.renderSize = calculateCustomPlaneSize(preloadedImage);
+    if (planeDefinition === definition) {
+      syncPlaneDimensions(definition);
+    }
+    schedulePlaneMenuRefresh();
+    return Promise.resolve();
+  }
+
+  return loadPlaneImage(definition, imageUrl);
+}
+
+function loadPlaneImage(definition, imageUrl) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      definition.image = image;
+      definition.renderSize = calculateCustomPlaneSize(image);
+      if (planeDefinition === definition) {
+        syncPlaneDimensions(definition);
+      }
+      schedulePlaneMenuRefresh();
+      resolve();
+    };
+    image.onerror = () => {
+      console.warn(`Gagal memuat gambar pesawat dari ${definition.file}`);
+      const idx = planeDefinitions.indexOf(definition);
+      if (idx >= 0) {
+        planeDefinitions.splice(idx, 1);
+        if (state.selectedPlaneIndex >= planeDefinitions.length) {
+          state.selectedPlaneIndex = Math.max(planeDefinitions.length - 1, 0);
+        }
+        if (planeDefinition === definition) {
+          const fallbackIndex = Math.min(state.selectedPlaneIndex, planeDefinitions.length - 1);
+          if (fallbackIndex >= 0) {
+            applyPlaneDefinition(fallbackIndex);
+          } else {
+            planeDefinition = customPlaneDefinition;
+          }
+        }
+        schedulePlaneMenuRefresh();
+      }
+      resolve();
+    };
+    image.src = imageUrl;
+  });
+}
+
+function schedulePlaneMenuRefresh() {
+  if (schedulePlaneMenuRefresh._frame) {
+    return;
+  }
+  schedulePlaneMenuRefresh._frame = requestAnimationFrame(() => {
+    schedulePlaneMenuRefresh._frame = null;
+    createPlaneMenu();
+  });
+}
+
+function getCustomPlaneIndex() {
+  return planeDefinitions.indexOf(customPlaneDefinition);
+}
+
+async function discoverPlaneFiles() {
+  const fromManifest = await fetchPlaneManifest();
+  if (fromManifest.length > 0) {
+    return fromManifest;
+  }
+
+  const fromListing = await fetchDirectoryListing();
+  if (fromListing.length > 0) {
+    return fromListing;
+  }
+
+  return probeSequentialPlaneFiles();
+}
+
+async function fetchPlaneManifest() {
+  const manifestCandidates = ["../plane/manifest.json", "../plane/planes.json"];
+  for (const candidate of manifestCandidates) {
+    try {
+      const url = new URL(candidate, import.meta.url).href;
+      const response = await fetch(url, { cache: "no-cache" });
+      if (!response.ok) {
+        continue;
+      }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        return normalizeManifestEntries(data);
+      }
+      if (data && Array.isArray(data.files)) {
+        return normalizeManifestEntries(data.files);
+      }
+    } catch (error) {
+      console.warn("Gagal membaca manifest pesawat:", error);
+    }
+  }
+  return [];
+}
+
+function normalizeManifestEntries(entries) {
+  const files = [];
+  entries.forEach((entry) => {
+    if (!entry) {
+      return;
+    }
+    if (typeof entry === "string") {
+      files.push(entry);
+      return;
+    }
+    if (typeof entry === "object" && typeof entry.file === "string") {
+      files.push(entry.file);
+    }
+  });
+  return sanitizePlaneFilenames(files);
+}
+
+async function fetchDirectoryListing() {
+  try {
+    const url = new URL("../plane/", import.meta.url).href;
+    const response = await fetch(url, { cache: "no-cache" });
+    if (!response.ok) {
+      return [];
+    }
+    const text = await response.text();
+    const matches = [...text.matchAll(/href="([^"]+\.png)"/gi)];
+    const files = matches.map((match) => decodeURIComponent(match[1]));
+    return sanitizePlaneFilenames(files);
+  } catch (error) {
+    console.warn("Gagal membaca daftar berkas pesawat:", error);
+    return [];
+  }
+}
+
+async function probeSequentialPlaneFiles() {
+  const discovered = [];
+  const MAX_PLANES = 64;
+  for (let i = 1; i <= MAX_PLANES; i += 1) {
+    const filename = `${i}.png`;
+    // eslint-disable-next-line no-await-in-loop
+    const exists = await checkPlaneFileExists(filename);
+    if (exists) {
+      discovered.push(filename);
+    }
+  }
+  return discovered;
+}
+
+async function checkPlaneFileExists(filename) {
+  const sourceUrl = new URL(`../plane/${filename}`, import.meta.url).href;
+  try {
+    const response = await fetch(sourceUrl, { method: "HEAD", cache: "no-cache" });
+    if (response.ok) {
+      return true;
+    }
+    if (response.status === 405) {
+      return await preloadPlaneImage(filename, sourceUrl);
+    }
+    return false;
+  } catch (error) {
+    return await preloadPlaneImage(filename, sourceUrl);
+  }
+}
+
+function preloadPlaneImage(filename, url) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      preloadedPlaneImages.set(filename, image);
+      resolve(true);
+    };
+    image.onerror = () => {
+      resolve(false);
+    };
+    image.src = url;
+  });
+}
+
+function sanitizePlaneFilenames(files) {
+  const seen = new Set();
+  return files
+    .map((file) => file.trim())
+    .filter((file) => /\.png$/i.test(file))
+    .map((file) => file.replace(/^\.\//, ""))
+    .map((file) => file.split("/").pop() || file)
+    .filter((file) => {
+      if (seen.has(file)) {
+        return false;
+      }
+      seen.add(file);
+      return true;
+    })
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+}
+
+function derivePlaneMetadata(file) {
+  const baseName = (file.split("/").pop() || file).replace(/\.png$/i, "");
+  const prettyName = baseName
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+
+  let idBase = `folder-${baseName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`.replace(/^-+|-+$/g, "");
+  if (!idBase) {
+    idBase = `folder-plane-${Date.now()}`;
+  }
+
+  let uniqueId = idBase;
+  let attempt = 1;
+  while (planeDefinitions.some((definition) => definition.id === uniqueId)) {
+    uniqueId = `${idBase}-${attempt}`;
+    attempt += 1;
+  }
+
+  const name = prettyName || `Pesawat ${planeDefinitions.length + 1}`;
+  const description = `Pesawat dari berkas ${file}`;
+
+  return {
+    id: uniqueId,
+    name,
+    description,
+  };
+}
 
 const customPlaneDefinition = {
   id: "custom-upload",
+  source: "upload",
   airframe: "image",
   name: "Unggahan PNG",
   description: "Unggah gambar PNG milikmu.",
@@ -392,8 +299,6 @@ const customPlaneDefinition = {
   imageSrc: "",
   renderSize: null,
 };
-
-const CUSTOM_PLANE_INDEX = planeDefinitions.push(customPlaneDefinition) - 1;
 
 function calculateCustomPlaneSize(image) {
   const naturalWidth = image?.naturalWidth ?? 0;
@@ -419,14 +324,12 @@ function getDefinitionSize(definition) {
   return { width: PLANE_HITBOX.width, height: PLANE_HITBOX.height };
 }
 
-const airframeLabels = {
-  jet: "Jet",
-  prop: "Propeler",
-  stealth: "Stealth",
-  image: "Unggahan",
+const planeSourceLabels = {
+  folder: "Galeri",
+  upload: "Unggahan",
 };
 
-let planeDefinition = planeDefinitions[0];
+let planeDefinition = customPlaneDefinition;
 
 const plane = {
   x: GAME_WIDTH * 0.22,
@@ -527,9 +430,6 @@ function applyPlaneDefinition(index) {
     return;
   }
 
-  if (definition.airframe === "image" && !definition.image) {
-    return;
-  }
   planeDefinition = definition;
   syncPlaneDimensions(definition);
   plane.rotation = 0;
@@ -538,41 +438,40 @@ function applyPlaneDefinition(index) {
 }
 
 function createPlaneMenu() {
+  if (!planeGrid) {
+    return;
+  }
+
   planeGrid.innerHTML = "";
+
   planeDefinitions.forEach((def, index) => {
     const card = document.createElement("button");
     card.type = "button";
-    card.className = "plane-card";
+    card.className = "plane-card plane-card--image";
     card.dataset.index = index;
-    const typeLabel = airframeLabels[def.airframe] || def.airframe;
 
-    if (def.airframe === "image") {
-      card.classList.add("plane-card--image");
-      const hasImage = Boolean(def.image);
-      const previewContent = hasImage
-        ? `<img src="${def.imageSrc}" alt="Pesawat unggahan pengguna">`
-        : '<span class="plane-preview__placeholder">PNG</span>';
-      const caption = hasImage
-        ? "Klik untuk memakai unggahanmu."
-        : "Unggah PNG untuk menampilkan pesawatmu.";
-      card.innerHTML = `
-        <span class="plane-preview plane-preview--image">${previewContent}</span>
-        <strong>${def.name}</strong>
-        <span class="plane-tag">${typeLabel}</span>
-        <span class="caption">${caption}</span>
-      `;
-    } else {
-      const palette = def.palette;
-      card.innerHTML = `
-        <span class="plane-preview" data-airframe="${def.airframe}" style="--plane-top:${palette.fuselage}; --plane-belly:${palette.belly}; --plane-outline:${palette.outline}; --plane-detail:${palette.engine || palette.belly}; --plane-window:${palette.window || palette.outline}"></span>
-        <strong>${def.name}</strong>
-        <span class="plane-tag">${typeLabel}</span>
-        <span class="caption">${def.description}</span>
-      `;
+    const typeLabel = planeSourceLabels[def.source] || "Pesawat";
+    const hasImage = Boolean(def.imageSrc);
+    const altText = def.source === "upload" ? "Pesawat unggahan pengguna" : `Pesawat ${def.name}`;
+    const previewContent = hasImage
+      ? `<img src="${def.imageSrc}" alt="${altText}">`
+      : '<span class="plane-preview__placeholder">PNG</span>';
+
+    let caption = def.description;
+    if (def.source === "upload") {
+      const uploaded = Boolean(def.image);
+      caption = uploaded ? "Klik untuk memakai unggahanmu." : "Unggah PNG untuk menampilkan pesawatmu.";
     }
 
+    card.innerHTML = `
+      <span class="plane-preview plane-preview--image">${previewContent}</span>
+      <strong>${def.name}</strong>
+      <span class="plane-tag">${typeLabel}</span>
+      <span class="caption">${caption}</span>
+    `;
+
     card.addEventListener("click", () => {
-      if (def.airframe === "image" && !def.image) {
+      if (def.source === "upload" && !def.image) {
         updateUploadStatus("Pilih berkas PNG dari perangkatmu untuk mengganti pesawat.");
         planeUploadInput?.click();
         return;
@@ -585,6 +484,7 @@ function createPlaneMenu() {
     });
     planeGrid.appendChild(card);
   });
+
   updatePlaneMenuSelection();
 }
 
@@ -643,7 +543,7 @@ function handlePlaneUpload(event) {
         `PNG terunggah (${image.naturalWidth}×${image.naturalHeight}). Pesawat otomatis digunakan.`,
         "success",
       );
-      applyPlaneDefinition(CUSTOM_PLANE_INDEX);
+      applyPlaneDefinition(getCustomPlaneIndex());
       resetGame();
       hidePlaneMenu();
       createPlaneMenu();
@@ -1102,62 +1002,32 @@ function drawPipes() {
   }
 }
 
-function drawUnifiedAirframe(palette) {
-  const outline = palette.outline;
-  const fuselage = palette.fuselage;
-  const belly = palette.belly || fuselage;
-
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-
-  const gradient = ctx.createLinearGradient(-110, -32, -110, 26);
-  gradient.addColorStop(0, fuselage);
-  gradient.addColorStop(0.6, fuselage);
-  gradient.addColorStop(1, belly);
-
-  const silhouette = new Path2D();
-  silhouette.moveTo(-96, -4);
-  silhouette.quadraticCurveTo(-52, -22, -14, -20);
-  silhouette.quadraticCurveTo(2, -22, 6, -30);
-  silhouette.quadraticCurveTo(22, -32, 34, -42);
-  silhouette.quadraticCurveTo(46, -48, 40, -20);
-  silhouette.quadraticCurveTo(72, -16, 84, 0);
-  silhouette.quadraticCurveTo(88, 10, 52, 12);
-  silhouette.quadraticCurveTo(24, 16, -22, 18);
-  silhouette.quadraticCurveTo(-68, 20, -96, 8);
-  silhouette.quadraticCurveTo(-112, 4, -96, -4);
-  silhouette.closePath();
-
-  ctx.fillStyle = gradient;
-  ctx.fill(silhouette);
-  ctx.strokeStyle = outline;
-  ctx.lineWidth = 2.4;
-  ctx.stroke(silhouette);
+function drawPlanePlaceholder() {
+  const width = plane.width;
+  const height = plane.height;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+  ctx.strokeStyle = "rgba(16, 56, 92, 0.65)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.rect(-width * 0.5, -height * 0.5, width, height);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "rgba(16, 56, 92, 0.18)";
+  ctx.fillRect(-width * 0.2, -height * 0.18, width * 0.4, height * 0.36);
 }
-
-const airframeRenderers = {
-  jet: drawUnifiedAirframe,
-  prop: drawUnifiedAirframe,
-  stealth: drawUnifiedAirframe,
-};
 
 function drawPlane() {
   const definition = planeDefinition;
   ctx.save();
   ctx.translate(plane.x, plane.y);
 
-  if (definition.airframe === "image" && definition.image) {
+  if (definition?.image) {
     const size = getDefinitionSize(definition);
     ctx.rotate(plane.rotation);
     ctx.drawImage(definition.image, -size.width * 0.5, -size.height * 0.5, size.width, size.height);
   } else {
-    const { palette, airframe = "jet" } = definition;
-    const renderer = airframeRenderers[airframe] || airframeRenderers.jet;
-    // Mirror the airframe geometry so that every plane faces arah terbang.
-    // Rotation is negated after the horizontal flip to preserve the original pitching behaviour.
-    ctx.scale(-1, 1);
-    ctx.rotate(-plane.rotation);
-    renderer(palette);
+    ctx.rotate(plane.rotation);
+    drawPlanePlaceholder();
   }
 
   ctx.restore();
@@ -1311,7 +1181,29 @@ window.addEventListener("blur", () => {
   inputState.isPointerDown = false;
 });
 
-applyPlaneDefinition(0);
-createPlaneMenu();
-resetGame();
-requestAnimationFrame(loop);
+async function initializeGame() {
+  startButton.disabled = true;
+  await populatePlanesFromFolder();
+
+  if (!planeDefinitions.includes(customPlaneDefinition)) {
+    planeDefinitions.push(customPlaneDefinition);
+  }
+
+  let initialIndex = planeDefinitions.findIndex((definition) => definition.source === "folder");
+  if (initialIndex < 0) {
+    initialIndex = getCustomPlaneIndex();
+  }
+
+  if (initialIndex >= 0) {
+    applyPlaneDefinition(initialIndex);
+  } else {
+    planeDefinition = customPlaneDefinition;
+    state.selectedPlaneIndex = getCustomPlaneIndex();
+  }
+
+  createPlaneMenu();
+  resetGame();
+  requestAnimationFrame(loop);
+}
+
+initializeGame();
