@@ -18,9 +18,16 @@ SKY_GRADIENT.addColorStop(0, "#70c6ff");
 SKY_GRADIENT.addColorStop(0.6, "#acf0ff");
 SKY_GRADIENT.addColorStop(1, "#d0f6ff");
 
-const PLANE_HITBOX = {
+const PLANE_BASE_SIZE = {
   width: 128,
   height: 48,
+};
+
+const PLANE_SCALE = 2;
+
+const PLANE_HITBOX = {
+  width: PLANE_BASE_SIZE.width * PLANE_SCALE,
+  height: PLANE_BASE_SIZE.height * PLANE_SCALE,
 };
 
 const planeDefinitions = [];
@@ -304,11 +311,11 @@ function calculateCustomPlaneSize(image) {
   const naturalWidth = image?.naturalWidth ?? 0;
   const naturalHeight = image?.naturalHeight ?? 0;
   if (!naturalWidth || !naturalHeight) {
-    return { width: PLANE_HITBOX.width, height: PLANE_HITBOX.height };
+    return { width: PLANE_BASE_SIZE.width, height: PLANE_BASE_SIZE.height };
   }
 
-  const maxWidth = PLANE_HITBOX.width;
-  const maxHeight = PLANE_HITBOX.height;
+  const maxWidth = PLANE_BASE_SIZE.width;
+  const maxHeight = PLANE_BASE_SIZE.height;
   const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight);
 
   return {
@@ -319,7 +326,10 @@ function calculateCustomPlaneSize(image) {
 
 function getDefinitionSize(definition) {
   if (definition?.airframe === "image" && definition?.renderSize) {
-    return definition.renderSize;
+    return {
+      width: definition.renderSize.width * PLANE_SCALE,
+      height: definition.renderSize.height * PLANE_SCALE,
+    };
   }
   return { width: PLANE_HITBOX.width, height: PLANE_HITBOX.height };
 }
